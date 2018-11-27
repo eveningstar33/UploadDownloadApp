@@ -30,7 +30,7 @@
 			<tr>
 				<td>${document.id}</td>
 				<td>${document.name}</td>
-				<td><a href="download?id=${document.id}"></a></td>
+				<td><a href="download?id=${document.id}">download</a></td>
 			</tr>
 		</c:forEach>
 	</table>

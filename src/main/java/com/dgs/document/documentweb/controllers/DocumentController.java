@@ -2,6 +2,9 @@ package com.dgs.document.documentweb.controllers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,35 +13,52 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.dgs.document.documentweb.entities.Document;
 import com.dgs.document.documentweb.repos.DocumentRepository;
 
 @Controller
 public class DocumentController {
-	
+
 	@Autowired
 	private DocumentRepository repository;
 
 	@RequestMapping("/displayUpload")
-	public String displayUpload() {
+	public String displayUpload(ModelMap modelMap) {
+		findAllDownloads(modelMap);
 		return "documentUpload";
 	}
-	
+
+	private void findAllDownloads(ModelMap modelMap) {
+		List<Document> documents = repository.findAll();
+		System.out.println(documents.size());
+		modelMap.addAttribute("documents", documents);
+	}
+
 	@PostMapping("/upload")
-	public String uploadDocument(@RequestParam("document") MultipartFile multipartFile, 
-			@RequestParam("id") long id, ModelMap modelMap) {
+	public String uploadDocument(@RequestParam("document") MultipartFile multipartFile, @RequestParam("id") long id,
+			ModelMap modelMap) {
 		Document document = new Document();
 		document.setId(id);
-		document.setName(multipartFile.getName()); 
+		document.setName(multipartFile.getOriginalFilename());
 		try {
 			document.setData(multipartFile.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
-		repository.save(document); 
-		List<Document> documents = repository.findAll(); 
-		modelMap.addAttribute("documents", documents); 
+		}
+		repository.save(document);
+		findAllDownloads(modelMap);
 		return "documentUpload";
+	}
+
+	@RequestMapping("/download")
+	public StreamingResponseBody download(@RequestParam("id") long id, HttpServletResponse response) {
+		Document document = repository.findById(id).get();
+		byte[] data = document.getData();
+		response.setHeader("Content-Disposition", "attachment;filename=downloaded.jpeg");
+		return outputStream -> {
+			outputStream.write(data);
+		};
 	}
 }
