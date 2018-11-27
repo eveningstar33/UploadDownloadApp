@@ -11,10 +11,12 @@
 	<!-- enctype="multipart/form-data" - this tells the server that along with the form data
 	there are also attachments or files that are coming in -->
 	
-	<form action="/upload" method="POST" enctype="multipart/form-data">
+	<form action="upload" method="POST" enctype="multipart/form-data">
+		<pre>
 		Id: <input type="text" name="id" />
 		File: <input type="file" name="document" />
 		<input type="submit" name="submit" value="Upload" />
+		</pre>
 	</form>
 </body>
 </html>
